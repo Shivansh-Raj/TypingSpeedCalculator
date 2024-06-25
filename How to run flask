@@ -1,0 +1,5 @@
+1->run in virtual environment
+2->write: set FLASK_APP=typing_calc.py
+3->write: flask run 
+
+if the problem still persist close the terminal and re run it 
