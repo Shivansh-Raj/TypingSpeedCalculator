@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typing Speed Calculator</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to right, #ffecd2, #fcb69f);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+        
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        #sample-text {
+            font-size: 1.25rem;
+            color: #555;
+        }
+        
+        .initial-block img{
+            height:min(20vh,10vw);
+            width:min(20vh,10vw);
+        }
+
+        #input-text-div {
+            display:none;
+            font-size: 1rem;
+            margin-top: 20px;
+        }
+        
+        .results p {
+            margin: 0;
+            color: #333;
+        }
+        .results.img{
+            height : 
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container text-center mt-5">
+        <h1 class="display-4">Typing Speed Calculator</h1>
+        <div class="card mt-4">
+            <div class="card-body">
+                <div class="initial-block">
+                    <img src="/static/typing_speed.png" id="result-img">
+                </div>
+                <div class="results mt-4">
+                    <p id="typers-type"></p>
+                    <p id="wpm" class="h5">WPM: 0</p>
+                    <p id="accuracy" class="h5">Accuracy: 100%</p>
+                    <p id="net-speed" class="h5">Net Speed: 0</p>
+                </div>
+                <p id="sample-text" class="lead"></p>
+                <div id="input-text-div">
+                    <textarea id="input-text" class="form-control" rows="5" placeholder="Start typing here..." ></textarea>
+                    <div id="timer">
+                        <span id="time">60</span>
+                    </div>
+                </div>
+                <div>
+                    <button id="start-btn"class="btn btn-info mt-3">START</button>
+                    <button class="btn btn-danger mt-3" onclick="resetTest()">Reset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <script>
+        
+        var continueTimer = true;
+        var user_ip = ''
+        $('#start-btn').click(function() {
+            $('#input-text').prop('disabled',false)
+            $('#start-btn').css('display','none')
+            $('.results').css('display','none'),
+            $('#input-text-div').css('display','block')
+            $.ajax({
+                type: 'POST',
+                url: '/fetch_test', 
+                success: function(response) {
+                    $('#sample-text').text(response.test_line+'⏎')
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX request failed:', error);
+                }
+            })
+            startTimer();
+            console.log('btn clicked');
+        });
+        $('#input-text').on('keypress', function(e) {
+            if (e.which == 13) {
+              console.log('You pressed enter!');
+              // Your code here
+              $.ajax({
+                type: 'POST',
+                url: '/fetch_test', 
+                success: function(response) {
+                    $('#sample-text').text(response.test_line+'⏎')
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX request failed:', error);
+                }
+            })
+            }
+        });
+        
+        function startTimer() {
+            continueTimer = true;
+            let Time = parseInt($('#time').text());
+            updateTimer(Time);
+        }
+
+        function updateTimer(Time) {
+            if(continueTimer!=true){
+                return;
+            }
+            $('#time').text(Time);
+            if (Time > 0) {
+                setTimeout(function() {
+                    updateTimer(Time - 1);
+                }, 1000);
+            }
+            if(Time ===0 ){
+                $('#time').text('Processing Result!');
+                user_ip =$('#input-text').val(); // Use val() to get the input value
+                $.ajax({
+                    type: 'POST',
+                    url: '/result', // Use url to specify the URL endpoint
+                    data: {'user_ip': user_ip}, // Add a comma and specify the data object
+                    success: function(response) {
+                        console.log(response)
+                        $('#input-text').prop('disabled',true)
+                        $('.results').css('display','block')
+                        $('#wpm').text('WPM : '+response.wpm)
+                        $('#accuracy').text('Accuracy : '+response.accuracy)
+                        $('#net-speed').text('Net Speed : '+response.net_speed)
+                        $('#typers-type').text(response.typer_bio)
+                        $('#result-img').attr('src', '/static/'+response.typer + '.png');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX request failed:', error);
+                        // Handle errors here
+                    }
+                });
+            }
+        }
+
+        function resetTest(){
+            $.ajax({
+                type: 'POST',
+                url: '/reset_test', 
+                success: function(response) {
+                    $('#sample-text').text('Start When Ready!!')
+                },
+            })
+            $('#result-img').attr('src','/static/typing_speed.png')
+            $('.lead').text('')
+            $('#input-text-div').css('display','none')
+            $('#input-text').val('')
+            $('#start-btn').css('display','')
+            $('#time').text('60')
+            continueTimer = false
+        }
+        
+    </script>
+</body>
+
+
+</script>
+</html>
