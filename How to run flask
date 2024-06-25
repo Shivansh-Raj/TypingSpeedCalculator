@@ -1,5 +1,28 @@
-1->run in virtual environment
-2->write: set FLASK_APP=typing_calc.py
-3->write: flask run 
+Steps to Run a Flask Application
 
-if the problem still persist close the terminal and re run it 
+1. Clone the Repository:
+   git clone https://github.com/your-username/your-repo-name.git
+   cd your-repo-name
+
+2. Create a Virtual Environment:
+   python -m venv venv
+
+3. Activate the Virtual Environment:
+   - On Windows:
+     .\venv\Scripts\activate
+
+   - On macOS and Linux:
+     source venv/bin/activate
+
+4. Install Flask:
+   pip install flask
+
+5. Set the FLASK_APP Environment Variable:
+   - On Windows:
+     set FLASK_APP=typing_calc.py
+
+   - On macOS and Linux:
+     export FLASK_APP=your_flask_file.py
+
+6. Run the Flask Application:
+   flask run
